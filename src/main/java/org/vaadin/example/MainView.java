@@ -22,9 +22,10 @@ import com.vaadin.flow.server.PWA;
 @CssImport(value = "./styles/vaadin-text-field-styles.css", themeFor = "vaadin-text-field")
 public class MainView extends VerticalLayout {
 
+    private CustomerService service = CustomerService.getInstance();
+
     private CustomerForm form = new CustomerForm(this);
 
-    private CustomerService service = CustomerService.getInstance();
     private Grid<Customer> grid = new Grid<>(Customer.class);
     private TextField filterText = new TextField();
 
@@ -34,17 +35,31 @@ public class MainView extends VerticalLayout {
         filterText.setValueChangeMode(ValueChangeMode.EAGER);
         filterText.addValueChangeListener(e -> updateList());
 
+        Button addCustomerBtn = new Button("Add new customer");
+        addCustomerBtn.addClickListener(e -> {
+            grid.asSingleSelect().clear();
+            form.setCustomer(new Customer());
+        });
+
+        HorizontalLayout toolbar = new HorizontalLayout(filterText,
+                addCustomerBtn);
+
         grid.setColumns("firstName", "lastName", "status");
 
         HorizontalLayout mainContent = new HorizontalLayout(grid, form);
         mainContent.setSizeFull();
         grid.setSizeFull();
 
-        add(filterText, mainContent);
+        add(toolbar, mainContent);
 
         setSizeFull();
 
         updateList();
+
+        form.setCustomer(null);
+
+        grid.asSingleSelect().addValueChangeListener(event ->
+                form.setCustomer(grid.asSingleSelect().getValue()));
     }
 
     public void updateList() {
